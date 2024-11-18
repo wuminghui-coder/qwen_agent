@@ -1,11 +1,11 @@
 
 import requests
 import json
-from typing import Union
+from typing import Union,Optional
 import logging
 
 logger = logging.getLogger(__name__)
-def bert_https_request(query:str)->Union[None, dict]:
+def bert_https_request(query:str)->Optional[str]:
     headers = {
         "Content-Type": "application/json",
         "accept":"application/json"
@@ -23,11 +23,11 @@ def bert_https_request(query:str)->Union[None, dict]:
     
     return resp_json
 
-def bert_categorize(query:str)->Union[None, dict]:
+def bert_categorize(query:str)->Optional[str]:
     resp = bert_https_request(query)
     if not resp:
+        logger.error("get bert_categorize error")
         return None, None
-    #logger.debug(f"意图识别: {resp}")
 
     message = {}
 

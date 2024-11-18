@@ -35,5 +35,15 @@ def init_agent(app_config:dict):
         max_tokens=settings.QWEN_MAX_TOKEN,
     )
 
+    google_agent = OpenAILLM(
+        model="qwen2.5-3b-instruct",
+        api_key=settings.QWEN_KEY,
+        base_url=settings.QWEN_URL,
+        temperature=0.8,
+        top_p=0.9,
+        max_tokens=settings.QWEN_MAX_TOKEN,
+    )
+
     app_config["qwen_agent"]  = qwen_agent
     app_config["music_agent"] = music_agent
+    app_config["google_agent"] = google_agent

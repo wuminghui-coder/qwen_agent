@@ -1,0 +1,8 @@
+filename: weather
+name: get_current_weather
+description: get the current weather in a given location
+parameters:
+  - name: city
+    type: string
+    required: true
+    description: the city and state, e,g.San Franciso, CA

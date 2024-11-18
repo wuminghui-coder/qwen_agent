@@ -1,0 +1,8 @@
+filename: story
+name: play_story
+description: Query the story
+parameters:
+  - name: story's name
+    type: string
+    required: false
+    description: the name of the story

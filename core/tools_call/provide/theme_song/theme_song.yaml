@@ -1,0 +1,12 @@
+filename: theme_song
+name: theme_song
+description: Query the theme song of a specific TV show or movie
+parameters:
+  - name: song's name
+    type: string
+    required: false
+    description: The specific song title of the TV show or movie
+  - name: Singer
+    type: string
+    required: false
+    description: The name of the singer of this song

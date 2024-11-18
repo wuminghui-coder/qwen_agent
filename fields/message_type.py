@@ -77,3 +77,9 @@ class MessageType(int, Enum):
     VOLUME_MAX= 15
     #按ID播放歌曲
     PLAY_ID_SONG=23
+
+class HistoryType(int, Enum): 
+    ROBOT_CHAT   = 0
+    WEATHER_CHAT = 1
+    MUSIC_CHAT   = 2
+    CONTROL_CHAT = 3

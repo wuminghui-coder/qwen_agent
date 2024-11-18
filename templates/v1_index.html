@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音乐智能体</title>
+    <link rel="icon" type="image/x-icon" href="static/favicon.ico" />
+    <link rel="stylesheet" href="static/index.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="left">
+        <canvas class="fireworks"></canvas>
+        <div id="landlord">
+            <div class="message" style="opacity:0"></div>
+            <canvas id="live2d" width="540" height="500" class="live2d"></canvas>
+        </div>
+        <div class="chat-box">
+            <div class="chat-container">
+                <div class="chat-box-message" id="chat-box-message"></div>
+            </div>
+            <div class="search-container">
+                <p class="micro mb-">回车发送消息...</p>
+                <input class="text-input" type="search" name="s" placeholder="输入你要询问的内容" required="">
+                <i id= "icon_id" class="iconfont fas fa-search"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="right">
+        <div id="toggleDiv" class="toggleDivB">
+            <audio id="myAudio">
+                <source
+                id="audio_id"
+                type="audio/mpeg">
+            </audio>
+            <!-- 歌词 -->
+            <div class="container">
+                <ul class="lrc-box"></ul>
+            </div>
+            <!-- 歌词 end -->
+
+            <div class="player">
+                <!-- 播放信息 -->
+                <div class="info" id="info">
+                    <div class="song" id="song_name">
+                        <span class="name" id="artistId"></span>
+                    </div>
+
+                    <div class="progress-bar">
+                        <input type="range" min="0" max="100" value="0" class="slider" id="myRange">
+                        <div class="progress" id="progress"></div>
+                    </div>
+                </div>
+                <!-- 播放信息 end-->
+
+                <!-- 控件 -->
+                <div class="control" id="control">
+                    <div class="alarm"></div>
+                    <div class="buts">
+                        <div class="prev"></div>
+                        <div id="play" class="play"></div>
+                        <div class="next"></div>
+                    </div>
+                </div>
+                <!-- 控件 end-->
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="static/anime.min.js"></script>
+    <script type="text/javascript" src="static/fireworks.js"></script>
+    <script type="text/javascript" src="static/v1_index.js"></script>
+    <script type="text/javascript" src="https://cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+    <script type="text/javascript">
+        var message_Path = 'static/live2d/'
+        var home_Path = 'https://haremu.com/'
+    </script>
+    <script type="text/javascript" src="static/live2d/js/live2d.js"></script>
+    <script type="text/javascript" src="static/live2d/js/message.js"></script>
+    <script type="text/javascript">
+        loadlive2d("live2d", "static/live2d/model/tia/model.json");
+    </script>
+</body>
+</html>

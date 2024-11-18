@@ -1,0 +1,12 @@
+filename: music
+name: play_song
+description: Assist users in playing songs
+parameters:
+  - name: song's name
+    type: string
+    required: True
+    description: the name of the song
+  - name: Singer
+    type: string
+    required: false
+    description: The name of the singer of this song

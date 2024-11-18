@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stream Audio</title>
+</head>
+<body>
+    <h1>Stream Audio</h1>
+    <audio id="audio" controls></audio>
+    <script>
+        async function fetchAudioStream() {
+            const params = new URLSearchParams({
+                query: '终于下雨了。哇，我这里好晒，一点都不冷，前几天冷了，现在又不冷了',
+            });
+            const response = await fetch(`http://172.30.13.160:5001/audio?${params}`);
+            const audio = document.getElementById('audio');
+
+            if (response.ok) {
+                const reader = response.body.getReader();
+                const stream = new ReadableStream({
+                    start(controller) {
+                        function push() {
+                            reader.read().then(({ done, value }) => {
+                                if (done) {
+                                    controller.close();
+                                    return;
+                                }
+                                controller.enqueue(value);
+                                push();
+                            });
+                        }
+                        push();
+                    }
+                });
+
+                const audioSource = new Response(stream);
+                const audioBlob = await audioSource.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                audio.src = audioUrl;
+                audio.play();
+            } else {
+                console.error('Failed to fetch audio stream:', response.statusText);
+            }
+        }
+
+        fetchAudioStream();
+
+        // async function streamAudioData() {
+        //     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        //     const mediaRecorder = new MediaRecorder(stream);
+            
+        //     const streamWriter = new ReadableStream({
+        //         start(controller) {
+        //             mediaRecorder.ondataavailable = (event) => {
+        //                 if (event.data.size > 0) {
+        //                     controller.enqueue(event.data);
+        //                 }
+        //             };
+
+        //             mediaRecorder.onstop = () => {
+        //                 controller.close();
+        //             };
+        //         }
+        //     });
+
+        //     mediaRecorder.start();
+
+        //     // 使用 fetch 发送流式请求
+        //     const response = await fetch('http://localhost:5001/saudio', {
+        //         method: 'POST',
+        //         body: streamWriter,
+        //         duplex: 'half', // 添加此行
+        //     });
+
+        //     const result = await response.json();
+        //     console.log(result);
+        // }
+
+        // streamAudioData();
+    </script>
+</body>
+</html>

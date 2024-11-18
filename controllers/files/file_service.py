@@ -34,3 +34,6 @@ async def download_file(file_id: str):
         return FileResponse(file_path, media_type='application/octet-stream', filename=original_filename)
     else:
         raise HTTPException(status_code=404, detail="文件未找到")
+    
+
+

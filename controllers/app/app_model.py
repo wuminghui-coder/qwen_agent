@@ -1,10 +1,11 @@
 from fastapi import FastAPI, Request
 from fastapi import APIRouter
-from core import crud
 from extensions.exten_sql import SessionDep
 import logging
 from config.app_config import settings
 from pydantic import BaseModel, Field
+from core.user.user import UserServiceUpdate
+from core.user.conversation import ConversationServiceUpdate
 
 router = APIRouter()
 
@@ -51,7 +52,7 @@ class requestBody(BaseModel):
 
 @router.post("/create_user")
 async def create_user(body:requestBody, session: SessionDep):
-    user = crud.create_user(
+    user = UserServiceUpdate.create_user(
         session=session, 
         user_name=body.name
     )
@@ -60,7 +61,7 @@ async def create_user(body:requestBody, session: SessionDep):
 @router.post("/update_user")
 async def update_user(body:requestBody, request: Request):
     session = request.state.db  # 获取数据库会话
-    user = crud.update_user(
+    user = UserServiceUpdate.update_user(
         session=session, 
         user_id=body.user_id,
         name=body.name
@@ -70,7 +71,7 @@ async def update_user(body:requestBody, request: Request):
 @router.post("/delete_user")
 async def delete_user(body:requestBody, request: Request):
     session = request.state.db  # 获取数据库会话
-    user = crud.delete_user(
+    user = UserServiceUpdate.delete_user(
         session=session, 
         user_id=body.user_id,
     )
@@ -79,12 +80,12 @@ async def delete_user(body:requestBody, request: Request):
 @router.get("/all_user")
 async def all_user(request: Request):
     session = request.state.db  # 获取数据库会话
-    user_list = crud.get_all_user(session)
+    user_list = UserServiceUpdate.get_all_user(session)
     return user_list
 
 
 @router.post("/create_conversation")
 async def create_conversation(body:requestBody, request: Request):
     session = request.state.db  # 获取数据库会话
-    conversation = crud.create_conversation(session, body.user_id, body.name)
+    conversation = ConversationServiceUpdate.create_conversation(session, body.user_id, body.name)
     return conversation

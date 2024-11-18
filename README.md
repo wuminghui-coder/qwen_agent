@@ -2,14 +2,42 @@
 ---
 ## 启动
 ```shell
-    uvicorn app:app --reload
-    celery -A app.celery worker -Q dataset --loglevel INFO
+##python环境配置
+pyenv install 3.10
+pyenv global 3.10
+##项目环境配置
+cp .env.example .env
+##启动
+poetry env use 3.10
+poetry install
+poetry shell
 ```
 ---
-## 地址
+## 开发阶段
+- uvicorn app:app --host 0.0.0.0 --port=5001 --workers 4 --reload --log-level debug
+
+## 生产阶段
+- uvicorn app:app --host 0.0.0.0 --port=5001 --workers 4 --log-level debug
+
+## 异步队列启动
+- celery -A app.celery worker -Q dataset --loglevel INFO
+---
+## API文档
 - http://127.0.0.1:8000/docs
 
-
+## 前端地址
+- http://172.30.13.160:5001/v1/index
+---
+## SQL数据操作
+- 生成迁移文件：alembic revision --autogenerate -m "Create music table"
+- 升级到数据库：alembic upgrade head
+- 升级到指定版本：alembic upgrade <revision>
+- 查看迁移特定版本细节: alembic show <revision>
+- 列出所有迁移：alembic history
+- 初始化 Alembic：alembic init alembic
+- 回滚迁移：alembic downgrade -1
+- 查看当前版本：alembic current
+- alembic --help
 
 ## redis能力
 ```python
@@ -53,101 +81,56 @@ def read_user(user_id: int):
 
 ## SQL数据库操作
 ```
+from sqlmodel import select
 
-#db.select(App).where(*filters).order_by(App.created_at.desc()),
-#apps = db.session.query(App).filter(
-#                App.status == 'normal'
-#            ).order_by(App.created_at.desc()).paginate(page=page, per_page=50)
-#db.select(InstalledApp).join(App, InstalledApp.app_id == App.id)
-#               .join(TenantAccountJoin, TenantAccountJoin.account_id == App.uuid).where(*filters).order_by(App.created_at.desc()),
+select(表名) 方法
+where(*filters) 过滤器list
+order_by(App.created_at.desc()) 降序排序
+paginate()
+join() 跨表连接(需要链接的表，链接的条件字段InstalledApp.app_id == App.id)
+query(表名)
+filter(过滤器)
+all()
 
-#installed_apps = db.session.query(InstalledApp).join(App, InstalledApp.app_id == App.id).filter(
-#            App.is_public == True,
-#            InstalledApp.tenant_id == current_tenant_id
-#        ).all()
-#app_list = db.session.query(App).all()
-#db.select(InstalledApp).join(App, InstalledApp.app_id == App.id)
-# .join(TenantAccountJoin, TenantAccountJoin.account_id == App.uuid).where(*filters).order_by(App.created_at.desc()),
+options() 预加载关联的关系表提高速度 .options(selectinload(User.posts)) 
 
-
-#from sqlmodel import select
-
-#@app.get("/users/{user_id}")
-#def read_user(user_id: int):
-#    statement = select(User).where(User.id == user_id).options(selectinload(User.posts))
-#    return session.exec(statement).first()
-#使用 options() 进行预加载stmt = select(User).options(selectinload(User.posts)) 
-
-#users = session.exec(select(User.email, User.name)).all()
-#@app.get("/users/")
-#def read_users(skip: int = 0, limit: int = Query(10)):
-#    statement = select(User).offset(skip).limit(limit)
-#    return session.exec(statement).all()
+limit(限制数量)
+offset(偏移)
 
 
-    #with Session(engine) as session:  
-    #    user = session.exec(
-    #        select(User).where(User.email == settings.FIRST_SUPERUSER)
-    #    ).first()
-    #    if not user:
-    #        user_in = UserCreate(
-    #            email=settings.FIRST_SUPERUSER,
-    #            password=settings.FIRST_SUPERUSER_PASSWORD,
-    #            is_superuser=True,
-    #        )
-    #        user = crud.create_user(session=session, user_create=user_in)
-
-
-
-
-    #Field(default=None, sa_column_kwargs={"type_": "TEXT"})
-
-    #class SettingItem(SQLModel):
-    #    key: str
-    #    value: Any  # 使用 Any 以支持不同类型的值
-    #message_id: uuid.UUID = Field(default_factory=uuid.uuid4)
-    #conversation_id: uuid.UUID = Field(foreign_key='conversations.id')
-    #conversation: Conversation = Relationship(back_populates="messages")
-      #items: List[str] 
-    #settings: Dict[str, str]
-    #settings: Dict[str, str]         = Field(sa_column=JSON)
-    #settings: Dict[str, SettingItem] = Field(sa_column=JSON)
-    #message_items: List["Message"] = Relationship(back_populates="owner", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
-
-
+# 使用 Any 以支持不同类型的值
+Field(sa_column=JSON)
+settings: Dict[str, SettingItem] = Field(sa_column=JSON)
 ```
 
-
+---
 ## celery任务队列使用
-
 ```
-#@app.post("/add/")
-#async def create_task(x: int, y: int):
-#    task = add.delay(x, y)  # 调用 Celery 任务
-#    return {"task_id": task.id}
-
-#from celery.result import AsyncResult
-
-#@app.get("/task/{task_id}")
-#async def get_task_status(task_id: str):
-#    task_result = AsyncResult(task_id, app=celery_app)
-#    return {
-#        "task_id": task_id,
-#        "status": task_result.status,
-#        "result": task_result.result
-#    }
-
-#celery -A app.celery worker -Q dataset --loglevel INFO
-
+celery -A app.celery worker -Q dataset --loglevel INFO
 ```
 
+```
+from celery.result import AsyncResult
 
-## fastapi
-- 加入路由 api_router.include_router(file_service.router, prefix="/users", tags=["users"])
+task = add.delay(x, y)
+return {"task_id": task.id}
 
-lower() 将关键词转换为小写。
-开发阶段
-uvicorn app:app --host 0.0.0.0 --port=5001 --workers 4 --reload
 
-生成阶段
-uvicorn app:app --host 0.0.0.0 --port=5001 --workers 4
+@app.get("/task/{task_id}")
+async def get_task_status(task_id: str):
+    task_result = AsyncResult(task_id, app=celery_app)
+    return {
+        "task_id": task_id,
+        "status": task_result.status,
+        "result": task_result.result
+    }
+```
+
+---
+## python学习笔记
+- fastapi 加入路由 router.include_router(file_service.router, prefix="/users", tags=["users"])
+- lower() 将关键词转换为小写。
+
+
+## ffmpeg 
+- ffmpeg -i output.mp3 -ar 16000 output1.mp3

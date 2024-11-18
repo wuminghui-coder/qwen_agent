@@ -1,0 +1,8 @@
+filename: artist
+name: singer_personal
+description: Query the singer's personal introduction
+parameters:
+  - name: Singer
+    type: string
+    required: false
+    description: The name of the singer 

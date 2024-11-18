@@ -1,0 +1,8 @@
+filename: control
+name: lyrics 
+description: Query the lyrics of the song
+parameters:
+  - name: song's name
+    type: string
+    required: false
+    description: the name of the song

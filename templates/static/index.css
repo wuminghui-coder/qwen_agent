@@ -1,0 +1,739 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+}
+
+.right {
+    flex: 1; /* 1/3 */
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background-image: linear-gradient(to top, #fff1eb 0%, #ace0f9 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.toggleDivB
+{
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background-image: linear-gradient(to top, #fff1eb 0%, #ace0f9 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.visible {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background-image: linear-gradient(to top, #fff1eb 0%, #ace0f9 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.fireworks {
+    position: absolute; /* 使画布绝对定位 */
+    top: 0;             /* 从顶部开始 */
+    left: 0;            /* 从左侧开始 */
+    width: 100%;       /* 宽度占满整个视口 */
+    height: 100%;      /* 高度占满整个视口 */
+    z-index: 1;        /* 确保画布在其他元素之上 */
+    pointer-events: none; /* 禁用鼠标事件，允许点击穿透 */
+}
+
+#myAudio {
+    display: none;
+}
+
+.player {
+    position: relative;
+}
+
+.control {
+    width: 300px;
+    height: 80px;
+    background: #fff;
+    border-radius: 15px;
+    position: relative;
+    box-shadow: 0 20px 20px 5px rgba(132, 132, 132, 0.2);
+}
+
+:root {
+    --alarm-bg: url(./img/bg.jpg);
+}
+
+.alarm {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    position: absolute;
+    top: -15px;
+    left: 20px;
+    background: #000;
+    transform: scale(1);
+    transition: all 0.5s ease;
+}
+
+.alarm::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    bottom: 0;
+    border-radius: 50%;
+    background: var(--alarm-bg) no-repeat center center;
+    background-size: 100%;
+}
+
+  /* 音响 */
+.control.active .alarm::before {
+    animation: rotateF 3s infinite linear;
+}
+
+@keyframes rotateF {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.buts {
+    display: flex;
+    justify-content: flex-end;
+    height: 80px;
+    padding: 0 15px;
+}
+
+.prev,
+.play,
+.next {
+    width: 55px;
+    height: auto;
+    border-radius: 10px;
+    background: #000;
+    cursor: pointer;
+}
+
+.prev:hover,
+.play:hover,
+.next:hover {
+    background-color: #eee;
+}
+
+.prev {
+    background: url(./img/prev.svg) no-repeat center center;
+    background-size: 20px;
+}
+
+.play {
+    background: url(./img/play2.svg) no-repeat center center;
+    background-size: 20px;
+}
+
+.next {
+    background: url(./img/next.svg) no-repeat center center;
+    background-size: 20px;
+}
+
+  /* 播放时 */
+.control.active .play {
+    background: url(./img/play.svg) no-repeat center center;
+    background-size: 20px;
+}
+
+  /* 隐藏 */
+.info {
+    position: absolute;
+    height: 60px;
+    top: -60px;
+    left: 10px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.5);
+    padding: 5px 15px 5px 110px;
+    border-radius: 15px;
+}
+
+  /* 歌名 */
+.song {
+    color: #222;
+    font-size: 16px;
+    margin-bottom: 14px;
+    line-height: 16px;
+}
+
+  /* 歌手 */
+.name {
+    font-size: 12px;
+    color: #999;
+}
+
+  /* 播放进度 */
+.progress-bar {
+    width: 100%;
+    height: 6px;
+    position: relative;
+    background-color: #d3d3d3;
+    border-radius: 6px;
+}
+
+.slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 6px;
+    background: transparent;
+    outline: none;
+    z-index: 2;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 14px;
+    width: 14px;
+    background: #ddd;
+    border-radius: 50%;
+    cursor: pointer;
+
+}
+
+.progress {
+    height: 6px;
+    width: 0%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    background-color: rgba(255, 0, 0, 0.766);
+    border-radius: 6px;
+}
+
+  /* 歌词 */
+.container {
+    width: 100%;
+    height: 398px;
+    overflow: hidden;
+}
+
+.lrc-box {
+    width: 100%;
+    list-style: none;
+    transition: 0.5s;
+    text-align: center;
+    transition: all 2s ease-in;
+}
+
+.lrc-box li {
+    height: 30px;
+    line-height: 30px;
+    font-size: 13px;
+    color: #777;
+}
+
+.lrc-box li.on {
+    color: #444;
+    font-weight: 600;
+    transform: scale(1.1);
+}
+
+#landlord {
+    user-select: none;
+    position: fixed;
+    left: 80px;
+    top:250px;
+    width: 540px;
+    height: 500px;
+    z-index: 10000;
+    font-size: 0;
+    transition: all .3s ease-in-out;
+}
+
+#live2d {
+    position: relative;
+}
+
+.message {
+    opacity: 0;
+    width: 300px;
+    height: auto;
+    margin: auto;
+    padding: 7px;
+    top: -160px;
+    left: -50px;
+    text-align: center;
+    border: 1px solid rgba(255,137,255,.4);
+    border-radius: 12px;
+    background-color: rgba(255,137,255,.2);
+    box-shadow: 0 3px 15px 2px rgba(255,137,255,.4);
+    font-size: 22px;
+    font-weight: 400;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    overflow: hidden;
+    position: absolute;
+    animation-delay: 5s;
+    animation-duration: 50s;
+    animation-iteration-count: infinite;
+    animation-name: shake;
+    animation-timing-function: ease-in-out;
+}
+
+.hide-button {
+    position: absolute;
+    top: 10px;
+    right: 0;
+    /* bottom: 30px; */
+    display: none;
+    overflow: hidden;
+    /* padding: 4px; */
+    width: 60px;
+    height: 20px;
+    border: 1px solid rgba(255,137,255,.4);
+    border-radius: 12px;
+    background: rgba(255,137,255,.2);
+    box-shadow: 0 3px 15px 2px rgba(255,137,255,.4);
+    text-align: center;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.hide-button:hover {
+    border: 1px solid #f4a7b9;
+    background: #f4f6f8;
+}
+
+#button {
+    margin-left: 30px;
+    background-color: #4CAF50; /* 按钮背景色 */
+    color: white; /* 字体颜色 */
+    padding: 15px 32px; /* 内边距 */
+    text-align: center; /* 文本居中 */
+    text-decoration: none; /* 去掉下划线 */
+    display: inline-block; /* 使其成为块级元素 */
+    font-size: 16px; /* 字体大小 */
+    cursor: pointer; /* 鼠标指针样式 */
+    border: none; /* 去掉边框 */
+    border-radius: 8px; /* 圆角 */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 阴影 */
+    transition: background-color 0.3s, transform 0.2s; /* 过渡效果 */
+}
+
+.button:hover {
+    background-color: #45a049; /* 悬停时背景色 */
+    transform: scale(1.05); /* 悬停时放大 */
+}
+
+
+.button:active {
+    transform: scale(0.95); /* 点击时缩小 */
+}
+
+@media (max-width: 860px) {
+    #landlord {
+        display: none;
+    }
+}
+
+@keyframes shake {
+    2% {
+        transform: translate(0.5px, -1.5px) rotate(-0.5deg);
+    }
+
+    4% {
+        transform: translate(0.5px, 1.5px) rotate(1.5deg);
+    }
+
+    6% {
+        transform: translate(1.5px, 1.5px) rotate(1.5deg);
+    }
+
+    8% {
+        transform: translate(2.5px, 1.5px) rotate(0.5deg);
+    }
+
+    10% {
+        transform: translate(0.5px, 2.5px) rotate(0.5deg);
+    }
+
+    12% {
+        transform: translate(1.5px, 1.5px) rotate(0.5deg);
+    }
+
+    14% {
+        transform: translate(0.5px, 0.5px) rotate(0.5deg);
+    }
+
+    16% {
+        transform: translate(-1.5px, -0.5px) rotate(1.5deg);
+    }
+
+    18% {
+        transform: translate(0.5px, 0.5px) rotate(1.5deg);
+    }
+
+    20% {
+        transform: translate(2.5px, 2.5px) rotate(1.5deg);
+    }
+
+    22% {
+        transform: translate(0.5px, -1.5px) rotate(1.5deg);
+    }
+
+    24% {
+        transform: translate(-1.5px, 1.5px) rotate(-0.5deg);
+    }
+
+    26% {
+        transform: translate(1.5px, 0.5px) rotate(1.5deg);
+    }
+
+    28% {
+        transform: translate(-0.5px, -0.5px) rotate(-0.5deg);
+    }
+
+    30% {
+        transform: translate(1.5px, -0.5px) rotate(-0.5deg);
+    }
+
+    32% {
+        transform: translate(2.5px, -1.5px) rotate(1.5deg);
+    }
+
+    34% {
+        transform: translate(2.5px, 2.5px) rotate(-0.5deg);
+    }
+
+    36% {
+        transform: translate(0.5px, -1.5px) rotate(0.5deg);
+    }
+
+    38% {
+        transform: translate(2.5px, -0.5px) rotate(-0.5deg);
+    }
+
+    40% {
+        transform: translate(-0.5px, 2.5px) rotate(0.5deg);
+    }
+
+    42% {
+        transform: translate(-1.5px, 2.5px) rotate(0.5deg);
+    }
+
+    44% {
+        transform: translate(-1.5px, 1.5px) rotate(0.5deg);
+    }
+
+    46% {
+        transform: translate(1.5px, -0.5px) rotate(-0.5deg);
+    }
+
+    48% {
+        transform: translate(2.5px, -0.5px) rotate(0.5deg);
+    }
+
+    50% {
+        transform: translate(-1.5px, 1.5px) rotate(0.5deg);
+    }
+
+    52% {
+        transform: translate(-0.5px, 1.5px) rotate(0.5deg);
+    }
+
+    54% {
+        transform: translate(-1.5px, 1.5px) rotate(0.5deg);
+    }
+
+    56% {
+        transform: translate(0.5px, 2.5px) rotate(1.5deg);
+    }
+
+    58% {
+        transform: translate(2.5px, 2.5px) rotate(0.5deg);
+    }
+
+    60% {
+        transform: translate(2.5px, -1.5px) rotate(1.5deg);
+    }
+
+    62% {
+        transform: translate(-1.5px, 0.5px) rotate(1.5deg);
+    }
+
+    64% {
+        transform: translate(-1.5px, 1.5px) rotate(1.5deg);
+    }
+
+    66% {
+        transform: translate(0.5px, 2.5px) rotate(1.5deg);
+    }
+
+    68% {
+        transform: translate(2.5px, -1.5px) rotate(1.5deg);
+    }
+
+    70% {
+        transform: translate(2.5px, 2.5px) rotate(0.5deg);
+    }
+
+    72% {
+        transform: translate(-0.5px, -1.5px) rotate(1.5deg);
+    }
+
+    74% {
+        transform: translate(-1.5px, 2.5px) rotate(1.5deg);
+    }
+
+    76% {
+        transform: translate(-1.5px, 2.5px) rotate(1.5deg);
+    }
+
+    78% {
+        transform: translate(-1.5px, 2.5px) rotate(0.5deg);
+    }
+
+    80% {
+        transform: translate(-1.5px, 0.5px) rotate(-0.5deg);
+    }
+
+    82% {
+        transform: translate(-1.5px, 0.5px) rotate(-0.5deg);
+    }
+
+    84% {
+        transform: translate(-0.5px, 0.5px) rotate(1.5deg);
+    }
+
+    86% {
+        transform: translate(2.5px, 1.5px) rotate(0.5deg);
+    }
+
+    88% {
+        transform: translate(-1.5px, 0.5px) rotate(1.5deg);
+    }
+
+    90% {
+        transform: translate(-1.5px, -0.5px) rotate(-0.5deg);
+    }
+
+    92% {
+        transform: translate(-1.5px, -1.5px) rotate(1.5deg);
+    }
+
+    94% {
+        transform: translate(0.5px, 0.5px) rotate(-0.5deg);
+    }
+
+    96% {
+        transform: translate(2.5px, -0.5px) rotate(-0.5deg);
+    }
+
+    98% {
+        transform: translate(-1.5px, -1.5px) rotate(-0.5deg);
+    }
+
+    0%, 100% {
+        transform: translate(0, 0) rotate(0);
+    }
+}
+
+.search-container {
+    display: flex;
+    align-items: center;
+    background: #ace0f9;
+    border-radius: 25px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    padding: 10px 20px;
+    margin: auto;
+}
+
+.micro {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+    flex-basis: 100%;
+}
+.text-input {
+    width: 600px;
+    border: none;
+    outline: none;
+    flex-grow: 1;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 20px;
+    transition: box-shadow 0.3s;
+}
+.text-input:focus {
+    box-shadow: 0 0 5px rgba(0, 120, 215, 0.5);
+}
+.iconfont {
+    font-size: 20px;
+    color: #0078d7;
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+.left {
+    background-color: lightblue;
+    flex: 2; /* 2/3 */
+    display: flex; /* 使左侧区域成为 Flexbox 容器 */
+    justify-content: center; /* 垂直居中 */
+    align-items: center; /* 水平居中 */
+    margin: 0;
+}
+
+.chat-box {
+    margin-bottom: -10%;
+    margin-left: 40%;
+    border-radius: 10px;
+    width: 50%;
+     /*border: 2px solid #007BFF; /* 添加边框 */
+}
+
+.chat-container
+{
+    background-color: lightblue;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column; 
+    height: 600px; /* 使容器占满视口高度 */
+}
+
+.chat-box-message {
+    flex: 1;
+    padding: 20px;
+    border-bottom: 1px solid #ddd;
+    overflow-y: auto;
+    background-color: lightblue;
+    border-radius: 10px;
+}
+
+.chat-box-message::-webkit-scrollbar {
+    width: 8px; /* 滚动条宽度 */
+}
+
+.chat-box-message::-webkit-scrollbar-thumb {
+    background-color: #888; /* 滚动条颜色 */
+    border-radius: 10px; /* 圆角 */
+}
+
+.chat-box-message::-webkit-scrollbar-thumb:hover {
+    background-color: #555; /* 悬停时颜色 */
+}
+
+.chat-box-message::-webkit-scrollbar-track {
+    background: #f1f1f1; /* 滚动条轨道颜色 */
+    border-radius: 10px; /* 圆角 */
+}
+
+
+
+
+.chat-message {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin: 10px 0;
+    max-width: 50%;
+}
+
+.user-message {
+    align-items: flex-end;
+    margin-left: auto;
+}
+
+.bot-message {
+    align-items: flex-start;
+}
+
+.message-content {
+    padding: 8px 12px;
+    border-radius: 20px;
+}
+
+.user-content {
+    background-color: #ace0f9;
+    color: black;
+}
+
+.bot-content {
+    background-color: #ace0f9;
+    color: black;
+}
+
+.icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-bottom: 5px;
+}
+
+.song-info {
+    display: flex;
+    align-items: center;
+    margin-top: 5px;
+    padding: 10px;
+    border: 1px solid #ace0f9; /* 边框颜色 */
+    background-color: #ace0f9; /* 背景颜色 */
+    border-radius: 8px; /* 圆角 */
+}
+
+.song-image {
+    width: 50px;
+    height: 50px;
+    border-radius: 5px;
+    margin-right: 10px;
+}
+
+.input-container {
+    display: flex;
+    padding: 10px;
+    background-color: #fff;
+    border-top: 1px solid #ddd;
+}
+
+input[type="text"] {
+    border: 1px solid #ced4da;
+    border-radius: 20px;
+    padding: 10px;
+    flex: 1;
+    margin-right: 10px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+input[type="text"]:focus {
+    border-color: #007bff;
+}
+
+button {
+    padding: 10px 15px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #0056b3;
+}

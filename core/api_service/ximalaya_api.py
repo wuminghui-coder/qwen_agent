@@ -7,7 +7,7 @@ import hashlib
 import json
 import uuid
 import netifaces
-from typing import Union
+from typing import Union,Optional
 from enum import Enum
 
 
@@ -37,7 +37,7 @@ class ximalayaApi:
         self.base_url   = base_url
         self.sha1Key    = sha1Key
     
-    def ximalaya_http_requests(self, url: str, send_message:dict)->Union[None, dict]:
+    def ximalaya_http_requests(self, url: str, send_message:dict)->Optional[str]:
         timestamp = time.time()
         send_message["device_id"]             = get_mac_address('eth0')
         send_message["device_id_type"]        = "UUID"
@@ -168,7 +168,11 @@ class ximalayaApi:
         #json_string = json.dumps(resp , indent=4, separators=(',', ': '))
         tracks_list = []
         for item in resp["tracks"]:
-            tracks_list.append({"id":item["id"], "play_url": item["play_url_32"], "track_title":item["track_title"]})
+            tracks_list.append({"song_id":item["id"], 
+                                "song_url": item["play_url_32"], 
+                                "song_name":item["track_title"],
+                                "artist":item["subordinated_album"]["album_title"],
+                                "image":item["cover_url_small"]})
 
         return tracks_list
 
@@ -279,7 +283,12 @@ class ximalayaApi:
         #json_string = json.dumps(resp , indent=4, separators=(',', ': '), ensure_ascii=False)
         tracks_list = []
         for item in resp["tracks"]:
-            tracks_list.append({"id":item["id"], "play_url_32" : item["play_url_32"], "track_title":item["track_title"]})
+            #tracks_list.append({"id":item["id"], "play_url_32" : item["play_url_32"], "track_title":item["track_title"]})
+            tracks_list.append({"song_id":item["id"], 
+                                "song_url": item["play_url_32"], 
+                                "song_name":item["track_title"],
+                                "artist":item["subordinated_album"]["album_title"],
+                                "image":item["cover_url_small"]})
 
         return tracks_list
 
@@ -392,6 +401,14 @@ class ximalayaApi:
         #json_string = json.dumps(resp_json , indent=4, separators=(',', ': '), ensure_ascii=False)
         #print(json_string)
         return albums_list
+
+
+    def get_albums_story(self, query:str)->Optional[list]:
+        album_list = self.get_search_albums(query)
+        if not album_list:
+            return None
+        
+        return self.get_albums_browse(album_list[0]['id'])
 
 def ximalaya_test():
     app_key  ="3e0eb29c4d37481587aa7dc94d0fc77b"

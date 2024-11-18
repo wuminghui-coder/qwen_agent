@@ -1,0 +1,8 @@
+filename: play_list
+name: get_the_playlist
+description: 查询某一流派的歌曲
+parameters:
+  - name: a certain type
+    type: string
+    required: true
+    description: a specific type

@@ -11,6 +11,7 @@ from pydantic import (
 from pydantic_core import MultiHostUrl
 from typing import Annotated, Any, Literal
 import secrets
+from config.long_memory.mem_config import Mem0Settings
 
 def parse_cors(v: Any) -> list[str] | str:
     if isinstance(v, str) and not v.startswith("["):
@@ -19,7 +20,7 @@ def parse_cors(v: Any) -> list[str] | str:
         return v
     raise ValueError(v)
 
-class Settings(BaseSettings):
+class Settings(Mem0Settings):
     model_config = SettingsConfigDict(
         # Use top level .env file (one level above ./backend/)
         env_file=".env",
@@ -32,12 +33,12 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER_PASSWORD: str = "123456789"
 
     ##千问模型配置
-    QWEN_MODEL:str
-    QWEN_KEY:str
-    QWEN_URL:str
+    QWEN_MODEL:str|None = None
+    QWEN_KEY:str|None = None
+    QWEN_URL:str|None = None
     QWEN_MAX_TOKEN:int
 
-    OPENAI_ENABLE:bool
+    OPENAI_ENABLE:bool = True
     OPENAI_MODEL:str
     OPENAI_KEY:str
     OPENAI_URL:str = "https://api.openai.com/v1"
@@ -45,7 +46,7 @@ class Settings(BaseSettings):
 
     ##音乐配置
     MUSIC_URL: str
-    MUSIC_COOKIE:str
+    MUSIC_COOKIE:str |None = None
 
     WEATGER_API_KEY:str
 
@@ -59,11 +60,12 @@ class Settings(BaseSettings):
     
     PROJECT_NAME: str
     SENTRY_DSN: HttpUrl | None = None
-    POSTGRES_SERVER: str
+    
+    POSTGRES_SERVER: str = "localhost"
     POSTGRES_PORT: int = 5432
-    POSTGRES_USER: str
-    POSTGRES_PASSWORD: str = ""
-    POSTGRES_DB: str = ""
+    POSTGRES_USER: str = "postgres"
+    POSTGRES_PASSWORD: str = "agent123456"
+    POSTGRES_DB: str = "agent"
 
     SECRET_KEY: str = secrets.token_urlsafe(32)
     
@@ -92,5 +94,12 @@ class Settings(BaseSettings):
         return [str(origin).rstrip("/") for origin in self.BACKEND_CORS_ORIGINS] + [
             self.FRONTEND_HOST
         ]
+    
+    GOOGLE_KEY: str|None = None
+    GOOGLE_URL: str|None = None
+    GOOGLE_CSE_ID: str|None = None
+
+    ENABLE_TOOLS: bool = False
+    ENABLE_MEM:   bool= False
     
 settings = Settings()

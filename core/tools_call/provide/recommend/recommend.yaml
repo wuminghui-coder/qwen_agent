@@ -1,0 +1,4 @@
+filename: recommend
+name: recommend
+description: 推荐歌曲给用户，或者用户想播放一首歌曲，用户没有明确播放什么歌曲，或者随便播放歌曲
+parameters:

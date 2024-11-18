@@ -1,6 +1,6 @@
 import requests
 import json
-from typing import Union
+from typing import Union, Optional
 from enum import Enum
 from enum import IntEnum
 
@@ -25,6 +25,7 @@ class MusicRoute(str, Enum):
     LYRIC         = "/lyric"
     SONG_URL      = "/song/url/v1"
     SONG_DETAIL   = "/song/detail"
+    SEARCH_MULTIMATCH= "/search/multimatch"
     
 class MusicLevel(str, Enum):
     STANDED  = "standard" #标准
@@ -52,7 +53,7 @@ class MatchMusic():
         return count
     
     @staticmethod 
-    def match_of_artists_name(song_resp: dict, singer_name: str)->Union[None, dict]:
+    def match_of_artists_name(song_resp: dict, singer_name: str)->Optional[dict]:
         if not song_resp.get("result",{}).get("songs",[{}])[0].get("artists",[{}])[0].get("name"):
             return None
             
@@ -63,21 +64,21 @@ class MatchMusic():
             artists = "，".join(x["name"] for x in item["artists"])
             match_number = MatchMusic.count_same_characters(singer_name, artists)
             if match_number == len(singer_name):
-                song_message["id"]        = item["id"]
-                song_message["artists"]   = artists
+                song_message["song_id"]        = item["id"]
+                song_message["artist"]   = artists
                 song_message["song_name"] = item["name"]
                 break
                 
             if match_number > singer_max_number:
                 singer_max_number = match_number
-                song_message["id"]        = item["id"]
-                song_message["artists"]   = artists
+                song_message["song_id"]        = item["id"]
+                song_message["artist"]   = artists
                 song_message["song_name"] = item["name"]
 
         return song_message if song_message else None
     
     @staticmethod  
-    def match_of_song_name(song_resp: dict, song_name:str)->Union[None, dict]:
+    def match_of_song_name(song_resp: dict, song_name:str)->Optional[dict]:
         if not song_resp.get("result",{}).get("songs",[{}])[0].get("name"):
             return None
             
@@ -88,15 +89,15 @@ class MatchMusic():
             artists = "，".join(x["name"] for x in item["artists"])
             match_number = MatchMusic.count_same_characters(song_name, item["name"])
             if match_number == len(song_name):
-                song_message["id"]        = item["id"]
-                song_message["artists"]   = artists
+                song_message["song_id"]        = item["id"]
+                song_message["artist"]   = artists
                 song_message["song_name"] = item["name"]
                 break
                 
             if match_number > song_max_number:
                 song_max_number = match_number
-                song_message["id"]        = item["id"]
-                song_message["artists"]   = artists
+                song_message["song_id"]        = item["id"]
+                song_message["artist"]   = artists
                 song_message["song_name"] = item["name"]
 
         return song_message if song_message else None
@@ -111,7 +112,7 @@ class MusicApi:
     #resp_sjon["result"]["artists"][0]["id"]
     #album_id = resp_sjon.get("result", {}).get("albums", [{}])[0].get("id")
     #聚合搜索
-    def search_keyword(self, keywords:str, limit: int, search_type: SearchType)->Union[None, dict]:
+    def search_keyword(self, keywords:str, limit: int, search_type: SearchType)->Optional[dict]:
         resp = requests.get(url = self.url + MusicRoute.SEARCH, params= {'limit': limit, 'type':  search_type.value, 'keywords' : keywords, "cookie": self.cookie})
         if resp.status_code != 200:
             return None
@@ -125,7 +126,7 @@ class MusicApi:
         return resp_sjon
     
     ## 查询专辑下的歌曲
-    def get_album_of_songs(self, album_id: int)->Union[None, list]:
+    def get_album_of_songs(self, album_id: int)->Optional[list]:
         resp = requests.get(url = self.url + MusicRoute.ALBUM, params = {"id" : album_id, "cookie": self.cookie})
         if resp.status_code != 200:
             return None
@@ -140,15 +141,15 @@ class MusicApi:
         if not song_id:
             return None
         
-        song_list = []
+        play_list = []
         for item in album_sjon["songs"]:
             artists = "，".join(name["name"] for name in item["ar"])
-            song_list.append({"name": item["name"], "id": item["id"], "artists":  artists})   
+            play_list.append({"name": item["name"], "id": item["id"], "artists":  artists})   
         
-        return song_list
+        return play_list
     
     ## 查询歌手的所有专辑
-    def get_artists_of_albums(self, artist_id:int, limit: int)->Union[None, list]:
+    def get_artists_of_albums(self, artist_id:int, limit: int)->Optional[list]:
         resp  = requests.get(url = self.url  + MusicRoute.ARTIST_ALBUM, params= {"limit": limit, "id" : artist_id, "cookie": self.cookie})
         if resp.status_code != 200:
             return None
@@ -170,7 +171,7 @@ class MusicApi:
      
         return album_list
     ## 推荐歌曲
-    def get_recommend_of_songs(self)->Union[None, list]:
+    def get_recommend_of_songs(self)->Optional[list]:
         resp  = requests.get(url = self.url + MusicRoute.RECOMMEND)
         if resp.status_code != 200:
             return None
@@ -185,16 +186,16 @@ class MusicApi:
         if not song_id:
             return None
     
-        song_list = []
+        play_list = []
         for item in resp_sjon["data"]["dailySongs"]:
             artists = "，".join(name["name"] for name in item["ar"])
-            song_list.append({"song_name":item["name"], "artist": artists, "song_id":item["id"]})
+            play_list.append({"song_name":item["name"], "artist": artists, "song_id":item["id"]})
     
-        return song_list
+        return play_list
     
     ## 推荐新歌曲
-    def get_new_of_songs(self)->Union[None, list]:
-        resp = requests.get(url = self.url + MusicRoute.PERSONAL)
+    def get_new_of_songs(self, limit: int)->Optional[list]:
+        resp = requests.get(url = self.url + MusicRoute.PERSONAL, params={"limit" : limit})
         if resp.status_code != 200:
             return None
         
@@ -208,11 +209,11 @@ class MusicApi:
         if not song_id:
             return None
         
-        song_list = []
+        play_list = []
         for item in resp_sjon["result"]:
-            song_list.append({"name":item["name"], "artists":item["song"]["artists"][0]["name"], "id":item["id"]})
+            play_list.append({"song_name":item["name"], "artist":item["song"]["artists"][0]["name"], "song_id":item["id"]})
 
-        return song_list
+        return play_list
     
     ## 歌手详细信息
     def get_artist_of_detail(self, artist_id:int)->Union[None, str]:
@@ -229,7 +230,7 @@ class MusicApi:
         return resp_sjon.get("data", {}).get("artist", {}).get("briefDesc")
     
     ## 搜索高质量歌单
-    def get_highquality_of_playlist(self, keywords: str, limit: int)->Union[None, list]:
+    def get_highquality_of_playlist(self, keywords: str, limit: int)->Optional[list]:
         resp  = requests.get(url = self.url  + MusicRoute.PLAYLIST, params={"limit" : limit, "cat": keywords, "cookie": self.cookie})
         if resp.status_code != 200:
             return None
@@ -239,19 +240,15 @@ class MusicApi:
         except json.JSONDecodeError as e:
             print(f"JSON Decode Error: {e}")
             return None
-        
-        song_id = resp_sjon.get("playlists", [{}])[0].get("id")
-        if not song_id:
-            return None
-        
-        song_list = []
+    
+        play_list = []
         for item in resp_sjon["playlists"]:
-            song_list.append({"name":item["name"], "id":item["id"]})
+            play_list.append({"name":item["name"], "id":item["id"]})
 
-        return song_list
+        return play_list
     
     ## 查找歌单中的歌曲
-    def get_playlist_of_songs(self, playlist_id:int, limit:int)->Union[None, list]:
+    def get_playlist_of_songs(self, playlist_id:int, limit:int)->Optional[list]:
         resp  = requests.get(url = self.url  + MusicRoute.PLAYLIST_SONG, params= {"limit":limit, "id": playlist_id, "cookie": self.cookie})
         if resp.status_code != 200:
             return None
@@ -266,11 +263,15 @@ class MusicApi:
         if not song_id:
             return None
         
-        song_list = []
+        play_list = []
         for item in resp_sjon["songs"]:
-            song_list.append({"name":item["name"], "artists":item["ar"][0]["name"], "id":item["id"]})
+            play_list.append({"song_name":item["name"], 
+                              "artist":item["ar"][0]["name"], 
+                              "song_id":item["id"],
+                              "image":item["al"]["picUrl"], 
+                              })
 
-        return song_list
+        return play_list
     
     ##获取歌手详细信息
     def get_other_artist_of_detail(self, artist_id:int)->Union[None, str]:
@@ -287,7 +288,7 @@ class MusicApi:
         return resp_sjon.get("briefDesc")
     
     ##获取歌手歌单
-    def get_artist_of_playlist(self, artists_id: int, limit: int)->Union[None, list]:
+    def get_artist_of_playlist(self, artists_id: int, limit: int)->Optional[list]:
         resp  = requests.get(url = self.url + MusicRoute.ARTIST_SONGS, params={'id': artists_id, 'limit': limit, 'order':"hot", "cookie": self.cookie})
         if resp.status_code != 200:
             return None
@@ -305,8 +306,8 @@ class MusicApi:
         resp_list = []
         for item in resp_sjon["songs"]:
             resp_list.append({
-                "id": item["id"], 
-                "name": item["name"], 
+                "song_id": item["id"], 
+                "song_name": item["name"], 
                 "artist": item["ar"][0]["name"]
             })
             
@@ -337,11 +338,13 @@ class MusicApi:
         except json.JSONDecodeError as e:
             print(f"JSON Decode Error: {e}")
             return None
-        
-        return resp_sjon.get("data", [{}])[0].get("url")
+        song_url = resp_sjon.get("data", [{}])[0].get("url")
+        if song_url.find("?") == -1:
+            return song_url
+        return song_url[:song_url.find("?")]
     
     ###获取歌曲的ID
-    def get_search_match_of_song(self, song_name:str, singer_name: str)->Union[None, dict]:
+    def get_search_match_of_song(self, song_name:str, singer_name: str)->Optional[dict]:
         song_resp = self.search_keyword(song_name, 30, SearchType.SONG)
         if not song_resp:
             return None
@@ -359,12 +362,12 @@ class MusicApi:
             return resp
         
         return {
-            "id":      song_resp["result"]["songs"][0]["id"],
-            "artists": song_resp["result"]["songs"][0]["artists"][0]["name"],
+            "song_id":      song_resp["result"]["songs"][0]["id"],
+            "artist": song_resp["result"]["songs"][0]["artists"][0]["name"],
             "song_name": song_resp["result"]["songs"][0]["name"]
         }
     
-    def get_search_of_artist(self, singer_name: str)->Union[None, dict]:
+    def get_search_of_artist(self, singer_name: str)->Optional[dict]:
         artists = self.search_keyword(singer_name, 30, SearchType.ARTISTS)
         if not artists:
             return None
@@ -376,7 +379,7 @@ class MusicApi:
             "id": artists.get("result", {}).get("artists", [{}])[0].get("id"),
             "artist": artists.get("result", {}).get("artists", [{}])[0].get("name"),
         }
-    def get_song_detail_of_id(self, song_id: str)->Union[None, dict]: #SONG_DETAIL
+    def get_song_detail_of_id(self, song_id: str)->Optional[dict]: #SONG_DETAIL
         resp  = requests.get(url = self.url + MusicRoute.SONG_DETAIL, params={"ids": song_id, "cookie": self.cookie})
         if resp.status_code != 200:
             return None
@@ -391,7 +394,51 @@ class MusicApi:
             return None
 
         return {
-            "id":      resp_sjon["songs"][0]["id"],
-            "artists": resp_sjon["songs"][0]["ar"][0]["name"],
-            "song_name": resp_sjon["songs"][0]["name"]
+            "song_id":      resp_sjon["songs"][0]["id"],
+            "artist": resp_sjon["songs"][0]["ar"][0]["name"],
+            "song_name": resp_sjon["songs"][0]["name"],
+            "image":resp_sjon["songs"][0]["al"]["picUrl"],
         }
+
+    #没有歌手，只是关键字搜索
+    def get_search_multimatch(self, keywords: str)->Optional[list]:
+        resp  = requests.get(url = self.url + MusicRoute.SEARCH_MULTIMATCH, params={"keywords": keywords})
+        if resp.status_code != 200:
+            return None
+        
+        try:
+            resp_sjon = json.loads(resp.text)
+        except json.JSONDecodeError as e:
+            print(f"JSON Decode Error: {e}")
+            return None
+        
+        if resp_sjon["result"].get("artist"):
+            resp = self.get_search_match_of_song(keywords, resp_sjon["result"]["artist"][0]["name"])
+            if resp:
+                return [resp]
+            
+        if resp_sjon["result"].get("playlist"):
+            play_list = self.get_playlist_of_songs(resp_sjon["result"]["playlist"][0]["id"], 15)
+            if play_list:
+                return play_list
+            
+        resp = self.get_search_match_of_song(keywords, None)
+        if resp:
+            return [resp]
+        return None
+    
+    ###获取所有的歌曲
+    def get_search_song_by_name(self, song_name:str)->Optional[dict]:
+        song_resp = self.search_keyword(song_name, 8, SearchType.SONG)
+        if not song_resp:
+            return None
+        
+        play_list = []
+
+        for item in song_resp["result"]["songs"]:
+            play_list.append({
+                "song_id": item["id"],
+                "artist" : item["artists"][0]["name"],
+                "image"  : item["artists"][0]["img1v1Url"],
+                "song_name": item["name"]})
+        return play_list
