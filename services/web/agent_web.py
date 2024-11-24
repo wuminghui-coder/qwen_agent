@@ -15,3 +15,8 @@ async def read_items():
 @web_router.get("/v2/index", response_class=HTMLResponse)
 async def read_items():
     return await generate_html_response('templates/v2_index.html')
+
+
+@web_router.get("/v3/index", response_class=HTMLResponse)
+async def read_items():
+    return await generate_html_response('templates/test.html')

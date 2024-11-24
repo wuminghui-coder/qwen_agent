@@ -47,6 +47,8 @@ def create_fastapi_app()->FastAPI:
     #app.mount("/static", StaticFiles(directory="static"), name="static")
     app.mount("/v1/static", StaticFiles(directory="templates/static"), name="static")
     app.mount("/v2/static", StaticFiles(directory="templates/static"), name="static")
+    app.mount("/static", StaticFiles(directory="templates/static/test/static"), name="static")
+    app.mount("/u_file", StaticFiles(directory="templates/static/test/u_file"), name="static")
     #create_app_core(app)
     app.add_middleware(DatabaseSessionMiddleware) #添加中间件
     

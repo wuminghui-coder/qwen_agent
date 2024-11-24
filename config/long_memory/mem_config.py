@@ -6,7 +6,7 @@ class Mem0Settings(BaseSettings):
     LLM_TEMPERATURE:float = Field(default=0.2, description="model")
     LLM_MAX_TOKENS:int = Field(default=2000, description="model")
     LLM_URL: str = Field(default="https://dashscope.aliyuncs.com/compatible-mode/v1", description="model")
-    LLM_KEY: str = Field(default="", description="model")
+    LLM_KEY: str = Field(default="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", description="model")
 
     QDRANT_NAME: str = Field(default="qdrant", description="model")
     QDRANT_HOST : str = Field(default="localhost", description="model")
