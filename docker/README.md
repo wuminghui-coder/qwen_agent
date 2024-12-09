@@ -22,8 +22,8 @@ body= {
 }
 
 ```
-
-
+https://nodejs.org/zh-cn/download/prebuilt-binaries
+https://nodejs.org/dist/v18.20.5/node-v18.20.5-linux-x64.tar.xz
 
 ## 网易云工具neteasecloudmusicapi
 ### 启动
